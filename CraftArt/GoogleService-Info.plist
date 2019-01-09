@@ -7,9 +7,9 @@
 	<key>AD_UNIT_ID_FOR_INTERSTITIAL_TEST</key>
 	<string>ca-app-pub-3940256099942544/4411468910</string>
 	<key>CLIENT_ID</key>
-	<string>695701257761-5t1f72rnfucjaoraggi0l8dvikgob5g9.apps.googleusercontent.com</string>
+	<string>695701257761-funt1dfu4b87aomekirn8jak6go24f38.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.695701257761-5t1f72rnfucjaoraggi0l8dvikgob5g9</string>
+	<string>com.googleusercontent.apps.695701257761-funt1dfu4b87aomekirn8jak6go24f38</string>
 	<key>API_KEY</key>
 	<string>AIzaSyAIROej2OTw9U00Bt9xLl9v6eRFf6NEYHM</string>
 	<key>GCM_SENDER_ID</key>
@@ -17,7 +17,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>YusuKe.CraftArt</string>
+	<string>YusuKe.CraftArtOfPush</string>
 	<key>PROJECT_ID</key>
 	<string>craftart-1db09</string>
 	<key>STORAGE_BUCKET</key>
@@ -33,7 +33,7 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:695701257761:ios:6026e7995b1d2a23</string>
+	<string>1:695701257761:ios:c92273373b92d9ed</string>
 	<key>DATABASE_URL</key>
 	<string>https://craftart-1db09.firebaseio.com</string>
 </dict>
