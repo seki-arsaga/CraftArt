@@ -8,7 +8,7 @@
 
 import UIKit
 
-class AddPhotoViewHeader: UICollectionViewCell {
+class AddPhotoHeader: UICollectionViewCell {
     
     let imageView: UIImageView = {
         let iv = UIImageView()

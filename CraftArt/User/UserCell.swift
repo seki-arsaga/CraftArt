@@ -8,7 +8,7 @@
 
 import UIKit
 
-class UserViewCell: BaseCollectionViewCell<Post> {
+class UserCell: BaseCollectionViewCell<Post> {
     
     override var item: Post? {
         didSet {

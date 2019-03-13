@@ -7,16 +7,82 @@
 //
 
 import UIKit
+import Firebase
+import FBSDKLoginKit
+import UserNotifications
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate, MessagingDelegate {
 
     var window: UIWindow?
 
-
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        //#C7C7C7 is basic unselected item color
+        FBSDKApplicationDelegate.sharedInstance()?.application(application, didFinishLaunchingWithOptions: launchOptions)
+        FirebaseApp.configure()
+
+        window = UIWindow()
+        window?.makeKeyAndVisible()
+        window?.rootViewController = MainController()
+        
+        UINavigationBar.appearance().backgroundColor = UIColor.rgb(red: 5, green: 42, blue: 112)
+        UINavigationBar.appearance().shadowImage = UIImage()
+        UINavigationBar.appearance().setBackgroundImage(UIImage(), for: .default)
+        UINavigationBar.appearance().tintColor = .white
+
+        attemptRegisterForNotification(application: application)
+        
         return true
+    }
+
+    func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        let handled = FBSDKApplicationDelegate.sharedInstance()?.application(app, open: url, sourceApplication: options[UIApplication.OpenURLOptionsKey.sourceApplication] as? String, annotation: options[UIApplication.OpenURLOptionsKey.sourceApplication])
+        
+        return handled!
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler(.alert)
+    }
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        
+        let userInfo = response.notification.request.content.userInfo
+        
+        if let followerId = userInfo["followerId"] as? String {
+            print("followerId: ", followerId)
+            
+            let userController = UserController.init(collectionViewLayout: UICollectionViewFlowLayout())
+            userController.userId = followerId
+            
+            if let mainTableBarController = window?.rootViewController as? MainController {
+                mainTableBarController.selectedIndex = 0
+                mainTableBarController.presentedViewController?.dismiss(animated: true, completion: nil)
+                
+                if let homeNavigationController = mainTableBarController.viewControllers?.first as? UINavigationController {
+                    homeNavigationController.pushViewController(userController, animated: true)
+                }
+            }
+        }
+    }
+    
+    fileprivate func attemptRegisterForNotification(application: UIApplication) {
+        Messaging.messaging().delegate = self
+        UNUserNotificationCenter.current().delegate = self
+        
+        let option: UNAuthorizationOptions = [.alert, .badge, .sound]
+        UNUserNotificationCenter.current().requestAuthorization(options: option) { (granted, err) in
+            if let err = err {
+                print("Failed to request Auth...: ", err)
+                return
+            }
+            if granted {
+                print("Auth granted.")
+            }else {
+                print("Auth denied.")
+            }
+        }
+        application.registerForRemoteNotifications()
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
@@ -44,3 +110,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 }
 
+class GlobalVar {
+    private init() {}
+    static var shared = GlobalVar()
+    
+    var categoryName: String?
+    var postImage: UIImage?
+}

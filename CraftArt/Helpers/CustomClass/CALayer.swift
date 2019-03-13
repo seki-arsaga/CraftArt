@@ -6,4 +6,11 @@
 //  Copyright © 2018年 YusuKe. All rights reserved.
 //
 
-import Foundation
+import UIKit
+
+class CustomLayer: CALayer {
+    override var zPosition: CGFloat {
+        get { return 0 }
+        set {}
+    }
+}

@@ -9,7 +9,7 @@
 import UIKit
 import Firebase
 
-class SearchViewController: BaseCollectionViewController<SearchViewCell, User>, UISearchBarDelegate {
+class SearchController: BaseCollectionViewController<SearchCell, User>, UISearchBarDelegate {
     
     lazy var searchBar: UISearchBar = {
        let sb = UISearchBar()
@@ -89,6 +89,12 @@ class SearchViewController: BaseCollectionViewController<SearchViewCell, User>, 
         }
     }
     
+    override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let userController = UserController.init(collectionViewLayout: UICollectionViewFlowLayout())
+        userController.userId = filteredUsers[indexPath.item].uid
+        self.navigationController?.pushViewController(userController, animated: true)
+    }
+    
     override func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         
         return CGSize(width: view.frame.width, height: 80)
@@ -99,7 +105,7 @@ class SearchViewController: BaseCollectionViewController<SearchViewCell, User>, 
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! SearchViewCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! SearchCell
         cell.item = filteredUsers[indexPath.item]
         
         return cell

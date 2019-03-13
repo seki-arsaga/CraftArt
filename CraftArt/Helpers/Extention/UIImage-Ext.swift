@@ -24,3 +24,22 @@ extension UIImage {
         return resizedImage
     }
 }
+
+extension UIImagePickerController {
+    
+    open override func viewDidLoad() {
+        super.viewDidLoad()
+        navigationController?.navigationBar.backgroundColor = .white
+        StatusBar.setStatusBar(view: view)
+    }
+    
+    open override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        //        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+    }
+    
+    open override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
+    }
+}
+

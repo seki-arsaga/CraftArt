@@ -96,14 +96,8 @@ class MessageAccessoryView: UIView, UITextViewDelegate {
         return view
     }()
     
-    
     var photoButtonLeftAnchor: NSLayoutConstraint?
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        
-        backgroundColor = .white
-        autoresizingMask = .flexibleHeight
-        
+    fileprivate func setupViews() {
         addSubview(messageSendButton)
         messageSendButton.anchor(top: nil, bottom: nil, left: nil, right: rightAnchor, paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: -8, width: 40, height: 40)
         messageSendButton.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
@@ -118,10 +112,19 @@ class MessageAccessoryView: UIView, UITextViewDelegate {
             ].forEach{ $0?.isActive = true }
         
         addSubview(messageTextView)
-        messageTextView.anchor(top: topAnchor, bottom: safeAreaLayoutGuide.bottomAnchor, left: photoButton.rightAnchor, right: messageSendButton.leftAnchor, paddingTop: 8, paddingBottom: -8, paddingLeft: 5, paddingRight: -8, width: 0, height: 0)
+        messageTextView.anchor(top: topAnchor, bottom: safeAreaLayoutGuide.bottomAnchor, left: photoButton.rightAnchor, right: messageSendButton.leftAnchor, paddingTop: 8, paddingBottom: -8, paddingLeft: 12, paddingRight: -7, width: 0, height: 0)
         
         addSubview(lineSeparatorView)
         lineSeparatorView.anchor(top: topAnchor, bottom: nil, left: leftAnchor, right: rightAnchor, paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0, width: 0, height: 0.5)
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        backgroundColor = .white
+        autoresizingMask = .flexibleHeight
+        
+        setupViews()
     }
     
     override var intrinsicContentSize: CGSize {

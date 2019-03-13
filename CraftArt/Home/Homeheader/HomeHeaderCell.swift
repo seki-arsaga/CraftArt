@@ -8,7 +8,7 @@
 
 import UIKit
 
-class HomeViewHeaderCell: UICollectionViewCell {
+class HomeHeaderCell: UICollectionViewCell {
     
     var category: Category? {
         didSet {

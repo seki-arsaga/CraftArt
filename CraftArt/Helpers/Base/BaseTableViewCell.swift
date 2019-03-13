@@ -6,4 +6,8 @@
 //  Copyright © 2018年 YusuKe. All rights reserved.
 //
 
-import Foundation
+import UIKit
+
+class BaseTableViewCell<U>: UITableViewCell {
+    var item: U!
+}

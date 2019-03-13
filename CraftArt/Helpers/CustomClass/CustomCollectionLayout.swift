@@ -8,12 +8,12 @@
 
 import UIKit
 
-protocol CustomDelegate: class {
+protocol CustomCollectionDelegate: class {
     func collectionView(_ collectionView: UICollectionView, heightForItemAt indexPath: IndexPath) -> CGFloat
 }
 
 class CustomCollectionLayout: UICollectionViewLayout {
-    weak var delegate: CustomDelegate!
+    weak var delegate: CustomCollectionDelegate!
     var numColumns = 3
     var padding: CGFloat = 3
     var attributesArray = [UICollectionViewLayoutAttributes]()

@@ -9,7 +9,7 @@
 import UIKit
 import Firebase
 
-class MainViewController: UITabBarController, UITabBarControllerDelegate {
+class MainController: UITabBarController, UITabBarControllerDelegate {
     
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
         if let index = viewControllers?.lastIndex(of: viewController) {
@@ -49,7 +49,7 @@ class MainViewController: UITabBarController, UITabBarControllerDelegate {
         
         let userViewController = templateViewController(rootViewController: UserController.init(collectionViewLayout: UICollectionViewFlowLayout()), unselected: "user_unselected", selected: "user_selected")
         
-        let searchViewController = templateViewController(rootViewController: SearchViewController.init(collectionViewLayout: UICollectionViewFlowLayout()), unselected: "search_icon", selected: "search_icon")
+        let searchViewController = templateViewController(rootViewController: SearchController.init(collectionViewLayout: UICollectionViewFlowLayout()), unselected: "search_icon", selected: "search_icon")
         
         viewControllers = [homeViewController, addPhotoViewController, userViewController, searchViewController]
         
@@ -63,8 +63,8 @@ class MainViewController: UITabBarController, UITabBarControllerDelegate {
     fileprivate func templateViewController(rootViewController: UIViewController = UIViewController(), unselected: String, selected: String) -> UIViewController {
         let viewController = rootViewController
         let navViewController = UINavigationController.init(rootViewController: viewController)
-        navViewController.tabBarItem.image = UIImage(named: unselected)?.resize(size: CGSize(width: 30, height: 30))!.withRenderingMode(.alwaysOriginal)
-        navViewController.tabBarItem.selectedImage = UIImage(named: selected)?.resize(size: CGSize(width: 30, height: 30))!.withRenderingMode(.alwaysOriginal)
+        navViewController.tabBarItem.image = UIImage(named: unselected)?.resize(size: CGSize(width: 25, height: 25))!.withRenderingMode(.alwaysOriginal)
+        navViewController.tabBarItem.selectedImage = UIImage(named: selected)?.resize(size: CGSize(width: 25, height: 25))!.withRenderingMode(.alwaysOriginal)
         
         return navViewController
     }

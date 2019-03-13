@@ -10,20 +10,28 @@ import UIKit
 
 struct Message {
     
-    var userId: String?
+//    var userId: String?
+    var user: User?
     
     let profileImageUrl: String
-    let text: String
     let fromId: String
     let toId: String
     let creationDate: Date
+    var text: String?
+    var imageUrl: String?
     
-    init(userId: String, dictionary: [String: Any]) {
-        self.userId = userId
+    var imageHeight: NSNumber?
+    var imageWidth: NSNumber?
+    
+    init(dictionary: [String: Any]) {
+//        self.user = user
         self.profileImageUrl = dictionary["profileImageUrl"] as? String ?? ""
-        self.text = dictionary["text"] as? String ?? ""
+        self.text = dictionary["text"] as? String
         self.fromId = dictionary["fromId"] as? String ?? ""
         self.toId = dictionary["toId"] as? String ?? ""
+        self.imageUrl = dictionary["imageUrl"] as? String
+        self.imageHeight = dictionary["imageHeight"] as? NSNumber
+        self.imageWidth = dictionary["imageWidth"] as? NSNumber
         
         let secondsfrom1970 = dictionary["timestamp"] as? Double ?? 0
         self.creationDate = Date(timeIntervalSince1970: secondsfrom1970)

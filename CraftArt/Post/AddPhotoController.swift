@@ -18,8 +18,8 @@ class AddPhotoController : UICollectionViewController, UICollectionViewDelegateF
     fileprivate func setupCollectionView() {
         StatusBar.setStatusBar(view: view)
         collectionView.backgroundColor = .white
-        collectionView.register(AddPhotoViewCell.self, forCellWithReuseIdentifier: cellId)
-        collectionView.register(AddPhotoViewHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: headerId)
+        collectionView.register(AddPhotoCell.self, forCellWithReuseIdentifier: cellId)
+        collectionView.register(AddPhotoHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: headerId)
     }
     
     fileprivate func setupNavBar() {
@@ -30,8 +30,8 @@ class AddPhotoController : UICollectionViewController, UICollectionViewDelegateF
     }
     
     @objc func handleNext() {
-        let postViewController = PostViewController()
-        navigationController?.pushViewController(postViewController, animated: true)
+        let postController = PostController()
+        navigationController?.pushViewController(postController, animated: true)
     }
     
     @objc func handleCancel() {
@@ -49,7 +49,7 @@ class AddPhotoController : UICollectionViewController, UICollectionViewDelegateF
     var selectedImage: UIImage?
     var images = [UIImage]()
     var assets = [PHAsset]()
-    var header: AddPhotoViewHeader?
+    var header: AddPhotoHeader?
     
     func setupFetchPhotos() -> PHFetchOptions {
         let fetchOptions = PHFetchOptions()
@@ -117,7 +117,7 @@ class AddPhotoController : UICollectionViewController, UICollectionViewDelegateF
     }
     
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerId, for: indexPath) as!  AddPhotoViewHeader
+        let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerId, for: indexPath) as!  AddPhotoHeader
         self.header = header
         
         header.imageView.image = selectedImage
@@ -141,7 +141,7 @@ class AddPhotoController : UICollectionViewController, UICollectionViewDelegateF
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! AddPhotoViewCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! AddPhotoCell
         cell.imageView.image = images[indexPath.item]
         
         return cell

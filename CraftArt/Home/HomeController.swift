@@ -9,23 +9,39 @@
 import UIKit
 import Firebase
 
-class HomeController: BaseCollectionViewController<HomeViewCell, Post>, HomeViewCellDelegate, HomeUserProfileCellDelegate{
+class HomeController: BaseCollectionViewController<HomeCell, Post> {
     
     let myVar = GlobalVar.shared
     let headerId = "headerId"
     let userCellId = "userCellId"
     var refreshController: UIRefreshControl!
     
-    lazy var homeViewHeader: HomeViewHeader = {
-        let vh = HomeViewHeader()
-        vh.homeViewController = self
+    lazy var homeHeader: HomeHeader = {
+        let vh = HomeHeader()
+        vh.homeController = self
         return vh
     }()
     
     fileprivate func setupNavBar() {
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+        navigationItem.backBarButtonItem?.tintColor = .white
         navigationItem.title = "HOME"
         navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
         navigationController?.hidesBarsOnSwipe = true
+        navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(named: "message_icon")?.resize(size: CGSize(width: 30, height: 30)), style: .plain, target: self, action: #selector(handleRightBar))
+        navigationItem.rightBarButtonItem?.tintColor = .white
+        navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage(named: "camera_icon")?.resize(size: CGSize(width: 30, height: 30)), style: .plain, target: self, action: #selector(handleCamera))
+        navigationItem.leftBarButtonItem!.tintColor = .white
+    }
+    
+    @objc func handleCamera() {
+        let cameraController = CameraController()
+        present(cameraController, animated: true, completion: nil)
+    }
+    
+    @objc func handleRightBar() {
+        let messageLogController = MessageLogController()
+        navigationController?.pushViewController(messageLogController, animated: true)
     }
     
     fileprivate func setupCollectionView() {
@@ -40,8 +56,8 @@ class HomeController: BaseCollectionViewController<HomeViewCell, Post>, HomeView
         view.addSubview(blueView)
         blueView.anchor(top: view.topAnchor, bottom: nil, left: view.leftAnchor, right: view.rightAnchor, paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0, width: 0, height: 60)
         
-        view.addSubview(homeViewHeader)
-        homeViewHeader.anchor(top: view.safeAreaLayoutGuide.topAnchor, bottom: nil, left: view.leftAnchor, right: view.rightAnchor, paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0, width: 0, height: 60)
+        view.addSubview(homeHeader)
+        homeHeader.anchor(top: view.safeAreaLayoutGuide.topAnchor, bottom: nil, left: view.leftAnchor, right: view.rightAnchor, paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0, width: 0, height: 60)
     }
     
     override func viewDidLoad() {
@@ -68,7 +84,7 @@ class HomeController: BaseCollectionViewController<HomeViewCell, Post>, HomeView
     }
     
     func setupUpdateFeed() {
-        NotificationCenter.default.addObserver(self, selector: #selector(handleUpdateFeed), name: PostViewController.updateFeedNotificationName, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(handleUpdateFeed), name: PostController.updateFeedNotificationName, object: nil)
     }
     
     @objc func handleUpdateFeed() {
@@ -139,25 +155,7 @@ class HomeController: BaseCollectionViewController<HomeViewCell, Post>, HomeView
                     let count = postLikes.reduce(0, {sum, number in sum + number})
                     post.countLikes = count
                     
-                    guard let uid = Auth.auth().currentUser?.uid else { return }
-                    let likesRef = Database.database().reference().child("likes").child(key).child(uid)
-                    likesRef.observeSingleEvent(of: .value, with: { (snapshot) in
-                        
-                        if let liked = snapshot.value as? Int, liked == 1 {
-                            post.hasliked = true
-                        }else {
-                            post.hasliked = false
-                        }
-                        
-                        self.items.insert(post, at: 0)
-                        self.items.sort(by: { (p1, p2) -> Bool in
-                            return p1.creationDate.compare(p2.creationDate) == .orderedDescending
-                        })
-                        self.collectionView.reloadData()
-                        
-                    }, withCancel: { (err) in
-                        print("Failed to fetch user likes...")
-                    })
+                    self.fetchPostInfoAndSort(key: key, post: post)
 
                 }, withCancel: { (err) in
                     print("Failed to fetch likes count")
@@ -165,6 +163,38 @@ class HomeController: BaseCollectionViewController<HomeViewCell, Post>, HomeView
             })
         }) { (err) in
             print("Failed to fetch post Info from DB..")
+        }
+    }
+    
+    fileprivate func fetchPostInfoAndSort(key: String, post: Post) {
+        var post = post
+        let commentRef = Database.database().reference().child("comments").child(key)
+        commentRef.observeSingleEvent(of: .value, with: { (snapshot) in
+            let countComments = snapshot.childrenCount
+            post.countComments = Int(countComments)
+            
+            guard let uid = Auth.auth().currentUser?.uid else { return }
+            let likesRef = Database.database().reference().child("likes").child(key).child(uid)
+            likesRef.observeSingleEvent(of: .value, with: { (snapshot) in
+                
+                if let liked = snapshot.value as? Int, liked == 1 {
+                    post.hasliked = true
+                }else {
+                    post.hasliked = false
+                }
+                
+                self.items.insert(post, at: 0)
+                self.items.sort(by: { (p1, p2) -> Bool in
+                    return p1.creationDate.compare(p2.creationDate) == .orderedDescending
+                })
+                self.collectionView.reloadData()
+                
+            }, withCancel: { (err) in
+                print("Failed to fetch user likes...")
+            })
+            
+        }) { (err) in
+            print("Failed to fetch comments: ", err)
         }
     }
     
@@ -187,75 +217,36 @@ class HomeController: BaseCollectionViewController<HomeViewCell, Post>, HomeView
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
         if indexPath.item == 0 {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: userCellId, for: indexPath) as! HomeUserProfileCell
             cell.homeUserProfileCellDelegate = self
             return cell
         }
         
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! HomeViewCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! HomeCell
         if !refreshController.isRefreshing {
             cell.item = items[indexPath.item - 1]
-            cell.homeViewCellDelegate = self
+            cell.homeCellDelegate = self
         }
         
         return cell
     }
     
-    func didTapCell(for text: String) {
-        navigationItem.title = text
-    }
-    
-    func didTapLikeButton(for cell: HomeViewCell) {
-        guard let index = collectionView.indexPath(for: cell) else { return }
-        
-        var post = items[index.item - 1]
-        guard let postId = post.postId else { return }
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        
-        let likeRef = Database.database().reference().child("likes").child(postId)
-        let value = [uid: post.hasliked == true ? 0 : 1]
-        if post.hasliked == true {
-            post.countLikes! -= 1
-        }else {
-            post.countLikes! += 1
-        }
-        likeRef.updateChildValues(value) { (err, ref) in
-            if let err = err {
-                print("Failed to update like: ", err)
-                return
-            }
-            post.hasliked = !post.hasliked
-            self.items[index.item - 1] = post
-            self.collectionView.reloadData()
-        }
-    }
-    
-    func didSelectItem(uid: String) {
-        let userViewController = UserViewController.init(collectionViewLayout: UICollectionViewFlowLayout())
-        userViewController.userId = uid
-        self.navigationController?.pushViewController(userViewController, animated: true)
-    }
-    
     func postImagePinchGesture(imageView: UIImageView, sender: UIPinchGestureRecognizer) {
+        
         if sender.state == .began || sender.state == .changed {
             imageView.transform = imageView.transform.scaledBy(x: sender.scale, y: sender.scale)
             sender.scale = 1.0
         }else if sender.state == .ended {
-            //FIXME: something
+            imageView.transform = CGAffineTransform.identity
         }
     }
     
-    func profilePanGesture(uid: String, sender: UITapGestureRecognizer) {
-        let userViewController = UserViewController.init(collectionViewLayout: UICollectionViewFlowLayout())
-        userViewController.userId = uid
-        self.navigationController?.pushViewController(userViewController, animated: true)
-    }
-    
-    func didTapMessageButton(post: Post) {
-        let messageViewController = MessageViewController.init(collectionViewLayout: UICollectionViewFlowLayout())
-        messageViewController.post = post
-        navigationController?.pushViewController(messageViewController, animated: true)
-    }
+    lazy var optionLauncher: OptionLauncher = {
+        let launcher = OptionLauncher()
+        launcher.homeController = self
+        
+        return launcher
+    }()
+ 
 }

@@ -18,6 +18,10 @@ struct User {
     let nickname: String
     var allPosts: Int?
     
+    var numberFollowings: Int?
+    var numberFollowers: Int?
+    var numberPosts: Int?
+    
     init(uid: String, dictionary: [String: Any]) {
         self.uid = uid
         self.email = dictionary["email"] as? String ?? ""

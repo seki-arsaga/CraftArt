@@ -8,7 +8,7 @@
 
 import UIKit
 
-class HomeViewHeader: UIView, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+class HomeHeader: UIView, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
     let cellId = "cellId"
     var homeController: HomeController?
@@ -46,7 +46,7 @@ class HomeViewHeader: UIView, UICollectionViewDelegate, UICollectionViewDataSour
     fileprivate func setupCollectionView() {
         addSubview(collecionView)
         collecionView.anchor(top: topAnchor, bottom: bottomAnchor, left: leftAnchor, right: rightAnchor, paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0, width: 0, height: 0)
-        collecionView.register(HomeViewHeaderCell.self, forCellWithReuseIdentifier: cellId)
+        collecionView.register(HomeHeaderCell.self, forCellWithReuseIdentifier: cellId)
         collecionView.showsHorizontalScrollIndicator = false
         collecionView.contentInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
     }
@@ -102,7 +102,7 @@ class HomeViewHeader: UIView, UICollectionViewDelegate, UICollectionViewDataSour
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! HomeViewHeaderCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! HomeHeaderCell
         cell.category = categories[indexPath.item]
         
         if categories[indexPath.item].isSelected != true {

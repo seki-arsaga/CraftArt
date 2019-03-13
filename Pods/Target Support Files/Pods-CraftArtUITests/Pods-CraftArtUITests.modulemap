@@ -1,0 +1,6 @@
+framework module Pods_CraftArtUITests {
+  umbrella header "Pods-CraftArtUITests-umbrella.h"
+
+  export *
+  module * { export * }
+}

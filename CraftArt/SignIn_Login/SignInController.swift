@@ -9,6 +9,7 @@
 import UIKit
 import Firebase
 import FirebaseStorage
+import Lottie
 
 class SignInController: UIViewController, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
     
@@ -24,25 +25,10 @@ class SignInController: UIViewController, UINavigationControllerDelegate, UIImag
     }()
     
     let emailTextField = SignInTextField(placeholderText: "メールアドレス", selector: #selector(handleChangeTextValue), target: self)
-    let passwordTextField: SignInTextField = {
-       let tf = SignInTextField(placeholderText: "パスワード", selector: #selector(handleChangeTextValue), target: self)
-        tf.isSecureTextEntry = true
-        return tf
-    }()
+    let passwordTextField = SignInTextField(placeholderText: "パスワード", selector: #selector(handleChangeTextValue), target: self)
     let nameTextField = SignInTextField(placeholderText: "名前", selector: #selector(handleChangeTextValue), target: self)
     let nicknameTextFiled = SignInTextField(placeholderText: "ニックネーム", selector: #selector(handleChangeTextValue), target: self)
-
-    let registerButton: UIButton = {
-       let button = UIButton(type: .system)
-        button.setTitle("登録", for: .normal)
-        button.setTitleColor(UIColor.rgb(red: 135, green: 156, blue: 188), for: .normal)
-        button.backgroundColor = UIColor.rgb(red: 129, green: 175, blue: 249)
-        button.isEnabled = false
-        button.layer.cornerRadius = 5
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
-        button.addTarget(self, action: #selector(handleRegisterButton), for: .touchUpInside)
-        return button
-    }()
+    let registerButton = RegisterButton(title: "登録", target: self, selector: #selector(handleRegisterButton))
     
     let dontRegisterButton: UIButton = {
         let button = UIButton(type: .system)
@@ -58,6 +44,16 @@ class SignInController: UIViewController, UINavigationControllerDelegate, UIImag
         button.addTarget(self, action: #selector(handleAlreadyHaveAccountButton), for: .touchUpInside)
         return button
     }()
+    
+    lazy var stackView: UIStackView = {
+        let sv = UIStackView(arrangedSubviews: [emailTextField, passwordTextField, nameTextField, nicknameTextFiled, registerButton])
+        sv.axis = .vertical
+        sv.distribution = .fillEqually
+        sv.spacing = 5
+        return sv
+    }()
+    
+    lazy var loadingImageView = LoadingImageView.init(view: view)
     
     @objc func handleAlreadyHaveAccountButton() {
         navigationController?.popViewController(animated: true)
@@ -85,29 +81,37 @@ class SignInController: UIViewController, UINavigationControllerDelegate, UIImag
     }
     
     @objc func handleRegisterButton() {
+        view.addSubview(loadingImageView)
+        view.endEditing(true)
         do {
             try signIn()
             setupRegisterInfo()
         }catch LoginError.incompleteForm {
             Alert.showBasicAlert(title: "未入力の項目があります。", message: "メールアドレス、パスワード、ニックネームを入力して下さい。", on: self)
+            self.loadingImageView.removeFromSuperview()
         }catch LoginError.invalidEmail {
             Alert.showBasicAlert(title: "無効なメールアドレスです。", message: "メールアドレスのフォームが正しいか確認して下さい。", on: self)
+            self.loadingImageView.removeFromSuperview()
         }catch LoginError.incorrectPasswordLength {
             Alert.showBasicAlert(title: "パスワードが短すぎます。", message: "パスワードは最低8文字以上を\n設定して下さい。", on: self)
+            self.loadingImageView.removeFromSuperview()
         }catch {
             Alert.showBasicAlert(title: "Unable To Login", message: "There was an error when attempting to login", on: self)
+            self.loadingImageView.removeFromSuperview()
         }
     }
     
     fileprivate func setupRegisterInfo() {
         guard let email = emailTextField.text else { return }
         guard let password = passwordTextField.text else { return }
-        let name = nameTextField.text ?? ""
+        let username = nameTextField.text ?? ""
         guard let nickname = nicknameTextFiled.text else { return }
         
         Auth.auth().createUser(withEmail: email, password: password) { (result, err) in
             if let err = err {
+                self.loadingImageView.removeFromSuperview()
                 print("Failed to register with email: ", err)
+                Alert.showBasicAlert(title: "", message: "このメールアドレスは\n既に登録されています。", on: self)
                 return
             }
             
@@ -130,17 +134,18 @@ class SignInController: UIViewController, UINavigationControllerDelegate, UIImag
                     
                     guard let imageUrl = url?.absoluteString else { return }
                     guard let uid = Auth.auth().currentUser?.uid else { return }
+                    guard let fcmToken = Messaging.messaging().fcmToken else { return }
                     let ref = Database.database().reference().child("users").child(uid)
                     
-                    let dic = ["email": email, "password": password, "name": name, "nickname": nickname, "imageUrl": imageUrl]
+                    let dic = ["email": email, "password": password, "username": username, "nickname": nickname, "imageUrl": imageUrl, "fcmToken": fcmToken]
                     ref.setValue(dic, withCompletionBlock: { (err, ref) in
                         if let err = err {
                             print("Failed to setValue to Firebase: ", err)
                             return
                         }
                         print("Successfully to setValue to firebase...")
-                        let mainViewController = MainViewController()
-                        self.present(mainViewController, animated: true, completion: nil)
+                        let mainController = MainController()
+                        self.present(mainController, animated: true, completion: nil)
                     })
                 })
             })
@@ -163,9 +168,11 @@ class SignInController: UIViewController, UINavigationControllerDelegate, UIImag
     
     @objc func handleProfileImageButton() {
         let imagePickerController = UIImagePickerController()
-        present(imagePickerController, animated: true, completion: nil)
         imagePickerController.allowsEditing = true
         imagePickerController.delegate = self
+        imagePickerController.navigationBar.tintColor = .white
+        imagePickerController.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.white]
+        present(imagePickerController, animated: true, completion: nil)
     }
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
@@ -174,7 +181,6 @@ class SignInController: UIViewController, UINavigationControllerDelegate, UIImag
         }else if let originalImage = info[.originalImage] as? UIImage {
             profileImageButton.setImage(originalImage.withRenderingMode(.alwaysOriginal), for: .normal)
         }
-        
         profileImageButton.imageView?.contentMode = .scaleAspectFill
         profileImageButton.layer.cornerRadius = profileImageButton.frame.width / 2
         profileImageButton.layer.masksToBounds = true
@@ -187,38 +193,20 @@ class SignInController: UIViewController, UINavigationControllerDelegate, UIImag
         view.layer.insertSublayer(gradientBackgroundColor, at: 0)
     }
     
-    fileprivate func setupStackView() {
-        let stackView = UIStackView(arrangedSubviews: [emailTextField, passwordTextField, nameTextField, nicknameTextFiled, registerButton])
-        stackView.axis = .vertical
-        stackView.distribution = .fillEqually
-        stackView.spacing = 5
+    fileprivate func setupViews() {
+        passwordTextField.isSecureTextEntry = true
+        
+        view.addSubview(profileImageButton)
+        profileImageButton.anchor(top: view.topAnchor, bottom: nil, left: nil, right: nil, paddingTop: 80, paddingBottom: 0, paddingLeft: 0, paddingRight: 0, width: 200, height: 200)
+        profileImageButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
         
         view.addSubview(stackView)
         stackView.anchor(top: profileImageButton.bottomAnchor, bottom: nil, left: view.leftAnchor, right: view.rightAnchor, paddingTop: 20, paddingBottom: 0, paddingLeft: 50, paddingRight: -50, width: 0, height: 245)
         
         view.addSubview(dontRegisterButton)
         dontRegisterButton.anchor(top:  stackView.bottomAnchor, bottom: nil, left: nil, right: view.rightAnchor, paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: -20, width: 200, height: 30)
-    }
-    
-    fileprivate func setupProfileImageButton() {
-        view.addSubview(profileImageButton)
-        profileImageButton.anchor(top: view.topAnchor, bottom: nil, left: nil, right: nil, paddingTop: 80, paddingBottom: 0, paddingLeft: 0, paddingRight: 0, width: 200, height: 200)
-        profileImageButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-    }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
         
-        setupBackgroundGradientColor()
-        setupProfileImageButton()
-        setupStackView()
-        setupAlreadyHaveAccountButton()
-        setupKeyboardNotification()
-    }
-    
-    private func setupAlreadyHaveAccountButton() {
         view.addSubview(alreadyHaveAccountButton)
-
         alreadyHaveAccountButton.anchor(top: nil, bottom: view.bottomAnchor, left: nil, right: nil, paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0, width: 300, height: 30)
         alreadyHaveAccountButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
     }
@@ -228,8 +216,8 @@ class SignInController: UIViewController, UINavigationControllerDelegate, UIImag
     }
     
     func setupKeyboardNotification() {
-        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(handleKeyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+        NotificationCenter.keyboardWillShow(selector: #selector(handleKeyboardWillShow), observer: self)
+        NotificationCenter.keyboardWillHide(selector: #selector(handleKeyboardWillHide), observer: self)
     }
     
     @objc func handleKeyboardWillShow(notification: Notification) {
@@ -243,7 +231,6 @@ class SignInController: UIViewController, UINavigationControllerDelegate, UIImag
     }
     
     @objc func handleKeyboardWillHide() {
-        
         UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
             self.view.transform = CGAffineTransform(translationX: 0, y: 0)
         }, completion: nil)
@@ -251,6 +238,14 @@ class SignInController: UIViewController, UINavigationControllerDelegate, UIImag
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
         return .lightContent
+    }
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        setupBackgroundGradientColor()
+        setupViews()
+        setupKeyboardNotification()
     }
     
 }

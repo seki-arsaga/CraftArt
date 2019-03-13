@@ -57,11 +57,9 @@ class MessageCell: BaseCollectionViewCell<Message> {
         label.textColor = UIColor(white: 0, alpha: 0.3)
         label.font = UIFont.systemFont(ofSize: 12)
         label.textAlignment = .center
-        
         return label
     }()
     
-    var dateString: String?
     let dateFormatter: DateFormatter = {
         let format = DateFormatter()
         format.dateStyle = .none
@@ -92,9 +90,7 @@ class MessageCell: BaseCollectionViewCell<Message> {
     var bubbleRightAnchor: NSLayoutConstraint?
     var bubbleLeftAnchor: NSLayoutConstraint?
     
-    override init(frame: CGRect) {
-        super.init(frame: frame)
-        
+    fileprivate func setupViews() {
         addSubview(profileImageView)
         addSubview(bubbleView)
         bubbleView.addSubview(textView)
@@ -103,18 +99,25 @@ class MessageCell: BaseCollectionViewCell<Message> {
         
         profileImageView.anchor(top: topAnchor, bottom: nil, left: leftAnchor, right: nil, paddingTop: 0, paddingBottom: 0, paddingLeft: 8, paddingRight: 0, width: 40, height: 40)
         
-        bubbleView.topAnchor.constraint(equalTo: self.topAnchor).isActive = true
-        bubbleView.heightAnchor.constraint(equalTo: self.heightAnchor).isActive = true
         bubbleWidthAnchor = bubbleView.widthAnchor.constraint(equalToConstant: 200)
-        bubbleWidthAnchor?.isActive = true
         bubbleRightAnchor = bubbleView.rightAnchor.constraint(equalTo: self.rightAnchor, constant: -8)
-        bubbleRightAnchor?.isActive = true
         bubbleLeftAnchor = bubbleView.leftAnchor.constraint(equalTo: profileImageView.rightAnchor, constant: 8)
+        [
+            bubbleWidthAnchor,
+            bubbleRightAnchor,
+            bubbleView.topAnchor.constraint(equalTo: self.topAnchor),
+            bubbleView.heightAnchor.constraint(equalTo: self.heightAnchor),
+            ].forEach{ $0?.isActive = true }
         
         textView.anchor(top: bubbleView.topAnchor, bottom: bubbleView.bottomAnchor, left: bubbleView.leftAnchor, right: bubbleView.rightAnchor, paddingTop: 2, paddingBottom: 0, paddingLeft: 8, paddingRight: 0, width: 0, height: 0)
         dateLabel.anchor(top: nil, bottom: bubbleView.bottomAnchor, left: nil, right: bubbleView.rightAnchor, paddingTop: 0, paddingBottom: -2, paddingLeft: 0, paddingRight: -2, width: 50, height: 20)
-        
         messageImageView.anchor(top: bubbleView.topAnchor, bottom: bubbleView.bottomAnchor, left: bubbleView.leftAnchor, right: bubbleView.rightAnchor, paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0, width: 0, height: 0)
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        setupViews()
     }
     
     required init?(coder aDecoder: NSCoder) {

@@ -10,7 +10,7 @@ import UIKit
 import Firebase
 
 protocol HomeUserProfileCellDelegate {
-    func didSelectItem(for cell: ProfileCell)
+    func didSelectItem(uid: String)
 }
 
 class HomeUserProfileCell: UICollectionViewCell, UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
@@ -43,7 +43,7 @@ class HomeUserProfileCell: UICollectionViewCell, UICollectionViewDelegate, UICol
     fileprivate func setupCollectionView() {
         addSubview(collecionView)
         collecionView.anchor(top: topAnchor, bottom: bottomAnchor, left: leftAnchor, right: rightAnchor, paddingTop: 10, paddingBottom: 0, paddingLeft: 0, paddingRight: 0, width: 0, height: 0)
-        collecionView.register(ProfileCell.self, forCellWithReuseIdentifier: cellId)
+        collecionView.register(HomeProfileCell.self, forCellWithReuseIdentifier: cellId)
         collecionView.showsHorizontalScrollIndicator = false
     }
     
@@ -71,16 +71,13 @@ class HomeUserProfileCell: UICollectionViewCell, UICollectionViewDelegate, UICol
                 if key == Auth.auth().currentUser?.uid {
                     return
                 }
-                
                 guard let userDictionary = value as? [String: Any] else { return }
-                let user = User.init(dictionary: userDictionary)
+                let user = User.init(uid: key, dictionary: userDictionary)
                 self.users.append(user)
             })
-            
             self.users.sort(by: { (u1, u2) -> Bool in
                 return u1.username.compare(u2.username) == .orderedAscending
             })
-            
             self.filteredUsers = self.users
             self.collecionView.reloadData()
             
@@ -94,8 +91,8 @@ class HomeUserProfileCell: UICollectionViewCell, UICollectionViewDelegate, UICol
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        homeUserProfileCellDelegate?.didSelectItem(for: ProfileCell())
-//        let userViewController = UserViewController.init(collectionViewLayout: UICollectionViewFlowLayout())
+        guard let uid = users[indexPath.item].uid else { return }
+        homeUserProfileCellDelegate?.didSelectItem(uid: uid)
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -103,9 +100,8 @@ class HomeUserProfileCell: UICollectionViewCell, UICollectionViewDelegate, UICol
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! ProfileCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellId, for: indexPath) as! HomeProfileCell
         cell.user = users[indexPath.item]
-        
         return cell
     }
     
@@ -114,7 +110,7 @@ class HomeUserProfileCell: UICollectionViewCell, UICollectionViewDelegate, UICol
     }
 }
 
-class ProfileCell: UICollectionViewCell {
+class HomeProfileCell: UICollectionViewCell {
     
     var user: User? {
         didSet {

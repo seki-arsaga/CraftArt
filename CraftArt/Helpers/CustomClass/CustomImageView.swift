@@ -10,7 +10,7 @@ import UIKit
 
 var imageCache = [String: UIImage]()
 
-class CustomProfileImageView: UIImageView {
+class CustomLoadImageView: UIImageView {
     
     var lastURLUsedToLoadImage: String?
     
@@ -41,6 +41,22 @@ class CustomProfileImageView: UIImageView {
                 self.image = photoImage
             }
             }.resume()
+    }
+}
+
+class LoadingImageView : UIImageView {
+    
+    init(view: UIView) {
+        super.init(frame: .zero)
+        self.backgroundColor = .white
+        self.frame = CGRect(x: 0, y: 20, width: view.frame.width, height: view.frame.height)
+        let loadingView = LoadingLottieView.init(animationName: "loading")
+        self.addSubview(loadingView)
+        loadingView.center = view.center
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
     
 }

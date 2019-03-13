@@ -22,7 +22,6 @@ class BaseCollectionViewController<T: BaseCollectionViewCell<U>, U>: UICollectio
     fileprivate func setupCollectionView() {
         collectionView.backgroundColor = .white
         collectionView.register(T.self, forCellWithReuseIdentifier: cellId)
-        
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
@@ -34,7 +33,7 @@ class BaseCollectionViewController<T: BaseCollectionViewCell<U>, U>: UICollectio
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return CGSize(width: 0, height: 0)
+        return CGSize(width: 50, height: 50)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
@@ -54,6 +53,10 @@ class BaseCollectionViewController<T: BaseCollectionViewCell<U>, U>: UICollectio
         cell.item = items[indexPath.row]
         
         return cell
+    }
+    
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
     }
     
 }

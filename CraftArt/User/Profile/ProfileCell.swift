@@ -6,4 +6,18 @@
 //  Copyright © 2019年 YusuKe. All rights reserved.
 //
 
-import Foundation
+import UIKit
+
+class ProfileCell: UICollectionViewCell {
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        
+        backgroundColor = .blue
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+}

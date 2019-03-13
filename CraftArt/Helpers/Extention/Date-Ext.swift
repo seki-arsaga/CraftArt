@@ -9,7 +9,7 @@
 import UIKit
 
 extension Date {
-    func timeAgoDisplayForEn() -> String {
+    func timeAgoDisplayForEN() -> String {
         let secondsAgo = Int(Date().timeIntervalSince(self))
         
         let minute = 60
@@ -49,7 +49,7 @@ extension Date {
 }
 
 extension Date {
-    func timeAgoDisplayForJa() -> String {
+    func timeAgoDisplayForJP() -> String {
         let secondsAgo = Int(Date().timeIntervalSince(self))
         
         let minute = 60

@@ -8,7 +8,7 @@
 
 import UIKit
 
-class SearchViewCell: BaseCollectionViewCell<User> {
+class SearchCell: BaseCollectionViewCell<User> {
     
     override var item: User! {
         didSet {
@@ -16,7 +16,7 @@ class SearchViewCell: BaseCollectionViewCell<User> {
             profileImageView.loadImage(urlString: urlString)
             
             let name = item.nickname
-            nameLabel.text = name
+            usernameLabel.text = name
         }
     }
     
@@ -29,7 +29,7 @@ class SearchViewCell: BaseCollectionViewCell<User> {
         return iv
     }()
     
-    let nameLabel: UILabel = {
+    let usernameLabel: UILabel = {
         let label = UILabel()
         label.text = "Something"
         label.textColor = .black
@@ -45,12 +45,12 @@ class SearchViewCell: BaseCollectionViewCell<User> {
     
     fileprivate func setupViews() {
         addSubview(profileImageView)
-        addSubview(nameLabel)
+        addSubview(usernameLabel)
         addSubview(separateImageView)
         profileImageView.anchor(top: nil, bottom: nil, left: leftAnchor, right: nil, paddingTop: 0, paddingBottom: 0, paddingLeft: 15, paddingRight: 0, width: 60, height: 60)
         profileImageView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
-        nameLabel.anchor(top: nil, bottom: nil, left: profileImageView.rightAnchor, right: nil, paddingTop: 0, paddingBottom: 0, paddingLeft: 15, paddingRight: 0, width: 200, height: 30)
-        nameLabel.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
+        usernameLabel.anchor(top: nil, bottom: nil, left: profileImageView.rightAnchor, right: nil, paddingTop: 0, paddingBottom: 0, paddingLeft: 15, paddingRight: 0, width: 200, height: 30)
+        usernameLabel.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
         separateImageView.anchor(top: bottomAnchor, bottom: nil, left: leftAnchor, right: rightAnchor, paddingTop: 0, paddingBottom: 0, paddingLeft: 30, paddingRight: -5, width: 0, height: 1)
     }
     

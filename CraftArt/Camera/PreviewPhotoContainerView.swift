@@ -13,7 +13,6 @@ class PreviewPhotoContainerView: UIView {
     
     let previewImageView: UIImageView = {
        let iv = UIImageView()
-        
         return iv
     }()
     
@@ -93,13 +92,13 @@ class PreviewPhotoContainerView: UIView {
         backgroundColor = .yellow
         
         addSubview(previewImageView)
-        previewImageView.anchor(top: topAnchor, left: leftAnchor, bottom: bottomAnchor, right: rightAnchor, paddingTop: 0, paddingLeft: 0, paddingBottom: 0, paddingRight: 0, width: 0, height: 0)
+        previewImageView.anchor(top: topAnchor, bottom: bottomAnchor, left: leftAnchor, right: rightAnchor, paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0, width: 0, height: 0)
         
         addSubview(cancelButton)
-        cancelButton.anchor(top: topAnchor, left: leftAnchor, bottom: nil, right: nil, paddingTop: 12, paddingLeft: 12, paddingBottom: 0, paddingRight: 0, width: 50, height: 50)
+        cancelButton.anchor(top: topAnchor, bottom: bottomAnchor, left: nil, right: nil, paddingTop: 12, paddingBottom: 12, paddingLeft: 0, paddingRight: 0, width: 50, height: 50)
         
         addSubview(saveButton)
-        saveButton.anchor(top: nil, left: leftAnchor, bottom: bottomAnchor, right: nil, paddingTop: 0, paddingLeft: 24, paddingBottom: -24, paddingRight: 0, width: 50, height: 50)
+        saveButton.anchor(top: nil, bottom: bottomAnchor, left: leftAnchor, right: nil, paddingTop: 0, paddingBottom: 24, paddingLeft: -24, paddingRight: 0, width: 50, height: 50)
     }
     
     required init?(coder aDecoder: NSCoder) {

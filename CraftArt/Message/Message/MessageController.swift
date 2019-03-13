@@ -13,11 +13,12 @@ import FirebaseStorage
 class MessageController: BaseCollectionViewController<MessageCell, Message>, MessageAccesoryViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     let headerId = "headerId"
-    var post: Post?
+    var user: User?
     var messages = [[Message]]()
+    var messageHeader = MessageHeader()
     
     fileprivate func setupCollectionView() {
-        navigationItem.title = post?.user.nickname
+        navigationItem.title = user!.nickname
         
         tabBarController?.tabBar.isHidden = true
         
@@ -34,24 +35,23 @@ class MessageController: BaseCollectionViewController<MessageCell, Message>, Mes
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-//        collectionView.transform = CGAffineTransform(scaleX: 1,y: -1)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         setupCollectionView()
-        fecthMessageWithUseeInfo()
-//        setupKeyboardNotification()
+        fecthMessageWithUserInfo()
     }
     
-    fileprivate func fecthMessageWithUseeInfo() {
+    fileprivate func fecthMessageWithUserInfo() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        guard let userId = post?.user.uid else { return }
+        guard let userId = user!.uid else { return }
         
         let messageRef = Database.database().reference().child("messages").child("user-messages").child(uid)
         messageRef.child(userId).observe(.childAdded, with: { (snapshot) in
             let messageId = snapshot.key
+            
             self.fecthMEssageWithMessageId(messageId: messageId, userId: userId)
         }) { (err) in
             print("Feiled to fetch message info:", err)
@@ -68,7 +68,7 @@ class MessageController: BaseCollectionViewController<MessageCell, Message>, Mes
 
         query.observeSingleEvent(of: .value, with: { (snapshot) in
             guard let dic = snapshot.value as? [String: Any] else { return }
-            let message = Message.init(userId: userId, dictionary: dic)
+            let message = Message.init(dictionary: dic)
                         
             let secondsfrom1970 = dic["timestamp"] as? Double ?? 0
             let creationDate = Date(timeIntervalSince1970: secondsfrom1970)
@@ -92,8 +92,7 @@ class MessageController: BaseCollectionViewController<MessageCell, Message>, Mes
     
     let dateFormatter: DateFormatter = {
         let format = DateFormatter()
-        format.dateStyle = .medium
-        format.timeStyle = .none
+        format.dateFormat = "MM/dd(EEE)"
         format.locale = Locale(identifier: "ja_JP")
         return format
     }()
@@ -113,6 +112,7 @@ class MessageController: BaseCollectionViewController<MessageCell, Message>, Mes
     }
     
     override func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
+
         return CGSize(width: view.frame.width, height: 45)
     }
     
@@ -151,7 +151,6 @@ class MessageController: BaseCollectionViewController<MessageCell, Message>, Mes
         }else if message.imageUrl != nil {
             cell.bubbleWidthAnchor?.constant = 200
         }
-        
         
         return cell
     }
@@ -283,7 +282,7 @@ class MessageController: BaseCollectionViewController<MessageCell, Message>, Mes
     fileprivate func sendMessageWithProperties(properties: [String: Any]) {
         containerView.messageSendButton.setImage(UIImage(named: "send_unableicon")?.resize(size: CGSize(width: 25, height: 25))?.withRenderingMode(.alwaysOriginal), for: .normal)
         guard let fromId = Auth.auth().currentUser?.uid else { return }
-        guard let toId = post?.user.uid else { return }
+        guard let toId = user!.uid else { return }
         
         let userRef = Database.database().reference().child("users").child(fromId)
         userRef.observe(.value, with: { (snapshot) in

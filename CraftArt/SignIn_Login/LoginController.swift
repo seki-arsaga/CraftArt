@@ -9,15 +9,13 @@
 import UIKit
 import Firebase
 import FirebaseStorage
+import FBSDKLoginKit
+import Lottie
 
 class LoginController: UIViewController {
     
     let emailTextField = SignInTextField(placeholderText: "メールアドレス", selector: #selector(handleChangeTextValue), target: self)
-    let passwordTextField: SignInTextField = {
-        let tf = SignInTextField(placeholderText: "パスワード", selector: #selector(handleChangeTextValue), target: self)
-        tf.isSecureTextEntry = true
-        return tf
-    }()
+    let passwordTextField = SignInTextField(placeholderText: "パスワード", selector: #selector(handleChangeTextValue), target: self)
     
     let loginButton: UIButton = {
         let button = UIButton(type: .system)
@@ -27,7 +25,7 @@ class LoginController: UIViewController {
         button.isEnabled = false
         button.layer.cornerRadius = 5
         button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
-        button.addTarget(self, action: #selector(handleRegisterButton), for: .touchUpInside)
+        button.addTarget(self, action: #selector(handleLoginButton), for: .touchUpInside)
         return button
     }()
     
@@ -39,6 +37,60 @@ class LoginController: UIViewController {
         button.addTarget(self, action: #selector(handleDontHaveAccountButton), for: .touchUpInside)
         return button
     }()
+    
+    let loginWithFBButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Login with Facebook", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = UIColor.rgb(red: 59, green: 89, blue: 152)
+        button.layer.cornerRadius = 5
+        button.layer.masksToBounds = true
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
+        button.addTarget(self, action: #selector(handleLoginWithFBButton), for: .touchUpInside)
+        return button
+    }()
+    
+    lazy var loadingImageView = LoadingImageView.init(view: view)
+    
+    @objc func handleLoginWithFBButton() {
+        FBSDKLoginManager().logIn(withReadPermissions: ["email", "public_profile"], from: self) { (result, err) in
+            if let err = err {
+                print("Custom FB login failed:", err)
+                return
+            }
+            self.showEmailAdress()
+        }
+    }
+    
+    fileprivate func showEmailAdress() {
+        let accessToken = FBSDKAccessToken.current()
+        guard let accessTokenString = accessToken?.tokenString else { return }
+        let credentials = FacebookAuthProvider.credential(withAccessToken: accessTokenString)
+        
+        Auth.auth().signInAndRetrieveData(with: credentials) { (result, err) in
+            if let err = err {
+                print("FB login failed:", err)
+                return
+            }
+            guard let uid = Auth.auth().currentUser?.uid else { return }
+            let email = result?.user.email ?? ""
+            let username = result?.user.displayName ?? ""
+            let imageUrl = result?.user.photoURL?.absoluteString ?? ""
+            
+            let fbRef = Database.database().reference().child("users").child(uid)
+            let values = ["email": email, "password": "", "username": username, "nickname": username, "imageUrl": imageUrl] as [String : Any]
+            fbRef.updateChildValues(values, withCompletionBlock: { (err, ref) in
+                
+                if let err = err {
+                    print("Failed to updated fb user info: ", err)
+                    return
+                }
+                print("Successfully to updated fb user info")
+                let mainController = MainController()
+                self.present(mainController, animated: true, completion: nil)
+            })
+        }
+    }
     
     @objc func handleDontHaveAccountButton() {
         let signInController = SignInController()
@@ -59,48 +111,70 @@ class LoginController: UIViewController {
         }
     }
     
-    @objc func handleRegisterButton() {
+    @objc func handleLoginButton() {
+        view.addSubview(loadingImageView)
+        view.endEditing(true)
         guard let email = emailTextField.text else { return }
         guard let password = passwordTextField.text else { return }
         
         Auth.auth().signIn(withEmail: email, password: password) { (res, err) in
             if let err = err {
                 print("Failed to signIn with email: ", err)
+                self.loadingImageView.removeFromSuperview()
                 Alert.showBasicAlert(title: "ログイン失敗。", message: "メールアドレス、もしくはパスワードが間違っています。", on: self)
                 return
             }
             
-            let mainViewController = MainViewController()
-            self.present(mainViewController, animated: true, completion: nil)
+            let mainController = MainController()
+            self.present(mainController, animated: true, completion: nil)
             
             print("Success to login")
         }
     }
     
-    fileprivate func setupStackView() {
+    fileprivate func setupStackViewAndOtherViews() {
+        passwordTextField.isSecureTextEntry = true
         let stackView = UIStackView(arrangedSubviews: [emailTextField, passwordTextField, loginButton])
         stackView.axis = .vertical
         stackView.distribution = .fillEqually
         stackView.spacing = 5
         
         view.addSubview(stackView)
-        stackView.anchor(top: view.topAnchor, bottom: nil, left: view.leftAnchor, right: view.rightAnchor, paddingTop: 250, paddingBottom: 0, paddingLeft: 50, paddingRight: -50, width: 0, height: 145)
+        view.addSubview(loginWithFBButton)
+        view.addSubview(dontHaveAccountButton)
+        stackView.anchor(top: view.topAnchor, bottom: nil, left: view.leftAnchor, right: view.rightAnchor, paddingTop: 200, paddingBottom: 0, paddingLeft: 50, paddingRight: -50, width: 0, height: 145)
+        loginWithFBButton.anchor(top: stackView.bottomAnchor, bottom: nil, left: view.leftAnchor, right: view.rightAnchor, paddingTop: 50, paddingBottom: 0, paddingLeft: 50, paddingRight: -50, width: 0, height: 50)
+        dontHaveAccountButton.anchor(top: nil, bottom: view.bottomAnchor, left: nil, right: nil, paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0, width: 300, height: 30)
+        dontHaveAccountButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+        
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        
         navigationController?.isNavigationBarHidden = true
         
-        setupStackView()
-        setupDontHaveAccountButton()
+        setupStackViewAndOtherViews()
+        setupKeyboardNotification()
     }
     
-    private func setupDontHaveAccountButton() {
-        view.addSubview(dontHaveAccountButton)
-        dontHaveAccountButton.anchor(top: nil, bottom: view.bottomAnchor, left: nil, right: nil, paddingTop: 0, paddingBottom: 0, paddingLeft: 0, paddingRight: 0, width: 300, height: 30)
-        dontHaveAccountButton.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
+    func setupKeyboardNotification() {
+        NotificationCenter.keyboardWillShow(selector: #selector(handleKeyboardWillShow), observer: self)
+        NotificationCenter.keyboardWillHide(selector: #selector(handleKeyboardWillHide), observer: self)
+    }
+    
+    @objc func handleKeyboardWillShow(notification: Notification) {
+        let transform = CGAffineTransform(translationX: 0, y: -50)
+        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+            self.view.transform = transform
+            self.view.layoutIfNeeded()
+        }, completion: nil)
+    }
+    
+    @objc func handleKeyboardWillHide() {
+        UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut, animations: {
+            self.view.transform = CGAffineTransform(translationX: 0, y: 0)
+        }, completion: nil)
     }
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {

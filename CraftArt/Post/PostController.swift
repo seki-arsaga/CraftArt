@@ -10,7 +10,7 @@ import UIKit
 import Firebase
 import FirebaseStorage
 
-class PostViewController: UIViewController {
+class PostController: UIViewController {
     
     var myVar = GlobalVar.shared
     
@@ -98,7 +98,7 @@ class PostViewController: UIViewController {
             }
             print("Successfully to uploaded to DB")
             
-            NotificationCenter.default.post(name: PostViewController.updateFeedNotificationName, object: nil)
+            NotificationCenter.default.post(name: PostController.updateFeedNotificationName, object: nil)
             self.dismiss(animated: true, completion: nil)
         }
     }
