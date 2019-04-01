@@ -18,6 +18,8 @@ class MessageLogController: UITableViewController {
         setupTableView()
     }
     
+    
+    
     fileprivate func setupTableView() {
         tableView.backgroundColor = .white
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellId)
