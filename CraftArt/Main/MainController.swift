@@ -9,7 +9,13 @@
 import UIKit
 import Firebase
 
+<<<<<<< HEAD
 class MainController: UITabBarController, UITabBarControllerDelegate {
+=======
+
+
+class MainViewController: UITabBarController, UITabBarControllerDelegate {
+>>>>>>> 5f3c64a247b87bb5dc5a9dacf50604966ef3be48
     
     func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
         if let index = viewControllers?.lastIndex(of: viewController) {

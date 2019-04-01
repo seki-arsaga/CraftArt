@@ -16,6 +16,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     var window: UIWindow?
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+    
+    
+
+>>>>>>> 65608d304a53686829946b86c3cecd57b48d114d
+>>>>>>> 5f3c64a247b87bb5dc5a9dacf50604966ef3be48
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         //#C7C7C7 is basic unselected item color
         FBSDKApplicationDelegate.sharedInstance()?.application(application, didFinishLaunchingWithOptions: launchOptions)

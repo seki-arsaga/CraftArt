@@ -18,6 +18,8 @@ class MessageLogController: BaseTableView<MessageLogCell, Message> {
         fetchMessageInfoFromDB()
     }
     
+    
+    
     fileprivate func setupTableView() {
         tableView.backgroundColor = .white
     }

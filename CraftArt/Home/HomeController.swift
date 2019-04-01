@@ -11,6 +11,8 @@ import Firebase
 
 class HomeController: BaseCollectionViewController<HomeCell, Post> {
     
+    
+    
     let myVar = GlobalVar.shared
     let headerId = "headerId"
     let userCellId = "userCellId"
